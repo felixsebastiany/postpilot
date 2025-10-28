@@ -50,7 +50,7 @@ jobs:
         env:
           CI: false
           PUBLIC_URL: /postpilot
-          REACT_APP_GRAPHQL_URL: ${{ secrets.GRAPHQL_URL }}
+          REACT_APP_MAGENTO_GRAPHQL_URL: ${{ secrets.GRAPHQL_URL }}
         run: npm run build
 
       - name: Add 404.html for SPA routing

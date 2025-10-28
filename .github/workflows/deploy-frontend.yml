@@ -1,0 +1,50 @@
+# Workflow: build do frontend e deploy para a branch gh-pages
+# Roda em push para main/master e manualmente (workflow_dispatch)
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        working-directory: src/frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: src/frontend
+        env:
+          CI: false
+          # Se preferir usar PUBLIC_URL em vez de homepage em package.json,
+          # defina aqui: PUBLIC_URL=/postpilot
+          PUBLIC_URL: /postpilot
+        run: npm run build
+
+      - name: Add 404.html for SPA routing
+        # copia index.html para 404.html para permitir fallback no GitHub Pages (HTML5 history)
+        run: cp src/frontend/build/index.html src/frontend/build/404.html
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: src/frontend/build
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'

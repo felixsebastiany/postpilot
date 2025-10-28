@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/postpilot/static/css/main.16a8ddd1.css",
+    "main.js": "/postpilot/static/js/main.1c38b9a6.js",
+    "index.html": "/postpilot/index.html",
+    "main.16a8ddd1.css.map": "/postpilot/static/css/main.16a8ddd1.css.map",
+    "main.1c38b9a6.js.map": "/postpilot/static/js/main.1c38b9a6.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.16a8ddd1.css",
+    "static/js/main.1c38b9a6.js"
+  ]
+}

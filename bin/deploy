@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+git pull
 bin/composer install
 bin/magento maintenance:enable
 bin/cli rm -rf generated/code var/view_preprocessed

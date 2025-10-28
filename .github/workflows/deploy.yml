@@ -52,8 +52,5 @@ jobs:
         env:
             DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          ssh external-machine
-          cd "$DEPLOY_PATH"
-          git pull
-          bin/deploy'
-          echo "Deploy finalizado com sucesso: $GIT_REV"
+          ssh external-machine 'cd /var/www/postpilot && bin/deploy'
+          echo "Deploy finalizado com sucesso!"

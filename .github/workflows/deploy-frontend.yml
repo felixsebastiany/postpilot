@@ -1,5 +1,10 @@
 name: Deploy Frontend to GitHub Pages
 
+# Permissões: garantir que o GITHUB_TOKEN consiga escrever na branch
+permissions:
+  contents: write
+  pages: write
+
 on:
   push:
     branches:

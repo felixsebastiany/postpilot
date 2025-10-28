@@ -38,19 +38,18 @@ jobs:
             SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
             mkdir -p ~/.ssh/
-            echo "$SSH_KEY" > ~/.ssh/external-machine.key
+            printf "%s\n" "$SSH_KEY" > ~/.ssh/external-machine.key
             chmod 600 ~/.ssh/external-machine.key
-            cat >>~/.ssh/config <<END
-            Host external-machine
-                    HostName $SSH_HOST
-                    User $SSH_USER
-                    Port $SSH_PORT
-                    IdentityFile ~/.ssh/external-machine.key
-                    StrictHostKeyChecking no
+
+            # escreve config de forma segura (sem heredoc indentado)
+            printf "Host external-machine\n  HostName %s\n  User %s\n  Port %s\n  IdentityFile ~/.ssh/external-machine.key\n  StrictHostKeyChecking no\n" \
+              "$SSH_HOST" "$SSH_USER" "$SSH_PORT" > ~/.ssh/config
+            chmod 600 ~/.ssh/config
 
       - name: Remote deploy (VIA SSH)
         env:
             DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          ssh external-machine 'cd /var/www/postpilot && bin/deploy'
+          # -tt aloca um TTY mesmo que não haja um terminal interactivo
+          ssh -tt external-machine "cd ${DEPLOY_PATH} && bin/deploy"
           echo "Deploy finalizado com sucesso!"

@@ -30,58 +30,27 @@ jobs:
         env:
           HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
 
-      - name: Remote deploy (SSH)
+      - name: "Configure SSH"
         env:
-          HOST: ${{ secrets.HOSTINGER_HOST }}
-          USER: ${{ secrets.HOSTINGER_USER }}
-          PORT: ${{ secrets.SSH_PORT }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-          GIT_REV: ${{ github.sha }}
-          GIT_BRANCH: ${{ github.ref_name }}
+            SSH_USER: ${{ secrets.HOSTINGER_USER }}
+            SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+            SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
-          # Defaults se não fornecidos
-          if [ -z "$PORT" ]; then PORT=22; fi
-          if [ -z "$DEPLOY_PATH" ]; then DEPLOY_PATH='/var/www/postpilot'; fi
+            mkdir -p ~/.ssh/
+            echo "$SSH_KEY" > ~/.ssh/external-machine.key
+            chmod 600 ~/.ssh/external-machine.key
+            cat >>~/.ssh/config <<END
+            Host external-machine
+                    HostName $SSH_HOST
+                    User $SSH_USER
+                    Port $SSH_PORT
+                    IdentityFile ~/.ssh/external-machine.key
+                    StrictHostKeyChecking no
 
-          echo "Deploying commit $GIT_REV (branch $GIT_BRANCH) to $USER@$HOST:$DEPLOY_PATH (port $PORT)"
-
-          # Passa as variáveis para o shell remoto de forma segura e envia o script via stdin
-          ssh -p "$PORT" "$USER@$HOST" "GIT_REV='$GIT_REV' GIT_BRANCH='$GIT_BRANCH' DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'EOF'
-          set -euo pipefail
-
-          # Caminho de deploy (recebido do runner)
-          cd "$DEPLOY_PATH" || { echo "Diretório $DEPLOY_PATH não encontrado"; exit 1; }
-
-          # Atualiza repositório
-          git fetch --all --prune
-
-          # Faz checkout da branch (cria se necessário)
-          if git rev-parse --verify "$GIT_BRANCH" >/dev/null 2>&1; then
-            git checkout -f "$GIT_BRANCH"
-          else
-            git checkout -B "$GIT_BRANCH" "origin/$GIT_BRANCH" || true
-          fi
-
-          # Garante que estamos no commit exato que disparou o workflow
-          git reset --hard "$GIT_REV"
-
-          # Detecta docker compose v1 ou v2 (caso seu deploy precise)
-          if command -v docker-compose >/dev/null 2>&1; then
-            DC="docker-compose"
-          else
-            DC="docker compose"
-          fi
-
-          # Pull/build/up caso seu bin/deploy não cuide disso (mantive apenas por segurança)
-          $DC pull --ignore-pull-failures || true
-          $DC up -d --build || true
-
-          # Executa o deploy usando o seu script (verifique se está no repositório e executável)
-          if [ -x ./bin/deploy ]; then
-            ./bin/deploy
-          else
-            echo "Arquivo ./bin/deploy não encontrado ou não é executável. Abortando." >&2
-            exit 1
-          fi
-
+      - name: Remote deploy (VIA SSH)
+        env:
+            DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          ssh external-machine 'cd "$DEPLOY_PATH" && git fetch --all --prune && bin/deploy'
           echo "Deploy finalizado com sucesso: $GIT_REV"

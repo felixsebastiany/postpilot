@@ -1,0 +1,71 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-postpilot
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Hostinger
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start ssh-agent and add private key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Ensure known_hosts for the server (adds host key)
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.HOSTINGER_HOST }}" >> ~/.ssh/known_hosts || true
+        env:
+          HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+
+      - name: Remote deploy (SSH)
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          USER: ${{ secrets.HOSTINGER_USER }}
+          PORT: ${{ secrets.SSH_PORT }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/var/www/postpilot' }}
+          GIT_REV: ${{ github.sha }}
+          GIT_BRANCH: ${{ github.ref_name }}
+        run: |
+          # Default port to 22 se não fornecido
+          if [ -z "$PORT" ]; then PORT=22; fi
+
+          echo "Deploying commit $GIT_REV (branch $GIT_BRANCH) to $USER@$HOST:$DEPLOY_PATH"
+
+          ssh -p "$PORT" "$USER@$HOST" bash -s <<EOF
+          set -euo pipefail
+
+          # caminho do deploy (ajuste se precisar)
+          DEPLOY_PATH="$DEPLOY_PATH"
+          cd "\$DEPLOY_PATH" || { echo "Diretório \$DEPLOY_PATH não encontrado"; exit 1; }
+
+          # Garantir que temos o repositório remoto e atualizações
+          git fetch --all --prune
+          # Tenta fazer checkout da branch; se não existir local, cria a partir do origin
+          if git rev-parse --verify "$GIT_BRANCH" >/dev/null 2>&1; then
+            git checkout -f "$GIT_BRANCH"
+          else
+            git checkout -B "$GIT_BRANCH" "origin/$GIT_BRANCH" || true
+          fi
+          git reset --hard "$GIT_REV"
+
+          DC="bin/docker-compose"
+
+          # Comandos Magento
+          # Desliga cache/ coloca em maintenance, aplica upgrade e recompila
+          \bin/deploy
+
+          echo "Deploy finalizado com sucesso: $GIT_REV"
+EOF

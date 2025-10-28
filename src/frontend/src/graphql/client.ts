@@ -4,7 +4,7 @@ import { onError } from '@apollo/client/link/error';
 import toast from 'react-hot-toast';
 
 // URL do GraphQL do Magento (ajuste conforme sua configuração)
-const GRAPHQL_ENDPOINT = process.env.REACT_APP_MAGENTO_GRAPHQL_URL || 'http://localhost/graphql';
+const GRAPHQL_ENDPOINT = process.env.REACT_APP_MAGENTO_GRAPHQL_URL || 'http://srv791323.hstgr.cloud/graphql';
 
 // Link HTTP
 const httpLink = createHttpLink({

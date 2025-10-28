@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Config/etc/email_templates.xsd">
+
+    <!-- Template customizado de boas-vindas -->
+    <template
+        id="postpilot_customer_welcome"
+        label="PostPilot - Customer Welcome Email"
+        file="customer_welcome.html"
+        type="html"
+        module="PostPilot_EmailTemplates"
+        area="frontend"/>
+
+    <!-- Override do template padrão de criação de conta -->
+    <template
+        id="customer_create_account_email_template"
+        label="PostPilot - Default Customer Welcome (Override)"
+        file="customer_welcome.html"
+        type="html"
+        module="PostPilot_EmailTemplates"
+        area="frontend"/>
+</config>

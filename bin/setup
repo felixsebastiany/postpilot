@@ -6,11 +6,6 @@ else
     echo "Warning: magento.env file not found."
 fi
 
-MEM_BYTES=$(docker info -f '{{.MemTotal}}')
-MEM_MB=$(( MEM_BYTES / 1000000 ))
-# When Docker Desktop is set to 6GB in the GUI, it is reported as 6227 MB
-(( MEM_MB < 6227 )) && echo "There must be at least 6GB of RAM allocated to Docker in order to continue." && exit
-
 DOMAIN=${1:-magento.test}
 
 bin/stop

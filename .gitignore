@@ -1,1 +1,25 @@
-src/
+# Magento
+src/app/etc/env.php
+src/var/
+src/generated/
+src/pub/static/
+src/pub/media/*
+!src/pub/media/.htaccess
+src/vendor/
+src/.user.ini
+
+# Frontend
+src/frontend/node_modules/
+src/frontend/.env
+src/frontend/.env.local
+src/frontend/build/
+
+# IDE/OS
+.idea/
+.vscode/
+.DS_Store
+.cursor
+
+# Composer/npm
+composer.lock
+package-lock.json

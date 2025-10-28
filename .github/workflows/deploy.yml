@@ -52,5 +52,8 @@ jobs:
         env:
             DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          ssh external-machine 'cd "$DEPLOY_PATH" && git fetch --all --prune && bin/deploy'
+          ssh external-machine
+          cd "$DEPLOY_PATH"
+          git pull
+          bin/deploy'
           echo "Deploy finalizado com sucesso: $GIT_REV"

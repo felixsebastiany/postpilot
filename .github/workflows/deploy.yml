@@ -85,4 +85,3 @@ jobs:
           fi
 
           echo "Deploy finalizado com sucesso: $GIT_REV"
-EOF

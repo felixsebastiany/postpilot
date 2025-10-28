@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,6 +12,7 @@ interface LoginFormData {
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [searchParams] = useSearchParams();
   const { login, loading } = useAuth();
   const navigate = useNavigate();
   
@@ -19,7 +20,16 @@ const Login: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
+    setValue
   } = useForm<LoginFormData>();
+
+  // Preencher email automaticamente se vier da query string
+  useEffect(() => {
+    const emailFromUrl = searchParams.get('email');
+    if (emailFromUrl) {
+      setValue('email', emailFromUrl);
+    }
+  }, [searchParams, setValue]);
 
   const onSubmit = async (data: LoginFormData) => {
     try {
@@ -132,9 +142,12 @@ const Login: React.FC = () => {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
-                Esqueceu sua senha?
-              </a>
+              <Link 
+                to="/forgot-password" 
+                className="font-medium text-primary-600 hover:text-primary-500"
+              >
+                Esqueci minha senha
+              </Link>
             </div>
           </div>
 

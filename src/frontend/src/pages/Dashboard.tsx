@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import ChangePasswordForm from '../components/ChangePasswordForm';
 import {
   Bars3Icon,
   XMarkIcon,
@@ -228,17 +229,24 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Alterar Senha */}
+      <ChangePasswordForm />
+
       {/* Funcionalidades Futuras */}
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Gerenciar Conta</h3>
         </div>
         <div className="p-6">
-          <p className="text-gray-600 mb-4">As funcionalidades de edição de perfil e alteração de senha estarão disponíveis em breve.</p>
+          <p className="text-gray-600 mb-4">Funcionalidades de gerenciamento de conta disponíveis.</p>
           <div className="space-y-2">
             <div className="flex items-center text-sm text-gray-500">
               <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
               Visualizar informações da conta
+            </div>
+            <div className="flex items-center text-sm text-gray-500">
+              <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+              Alterar senha
             </div>
             <div className="flex items-center text-sm text-gray-400">
               <ClockIcon className="h-4 w-4 text-gray-400 mr-2" />
@@ -246,7 +254,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex items-center text-sm text-gray-400">
               <ClockIcon className="h-4 w-4 text-gray-400 mr-2" />
-              Alterar senha (em breve)
+              Configurações de notificação (em breve)
             </div>
           </div>
         </div>

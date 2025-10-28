@@ -10,6 +10,7 @@ import {
   REVOKE_CUSTOMER_TOKEN,
   REQUEST_PASSWORD_RESET_EMAIL,
   RESET_PASSWORD,
+  CHANGE_CUSTOMER_PASSWORD,
   CREATE_CUSTOMER_ADDRESS,
   UPDATE_CUSTOMER_ADDRESS,
   DELETE_CUSTOMER_ADDRESS,
@@ -180,53 +181,6 @@ export const useRevokeCustomerToken = () => {
   );
 };
 
-// Hook para solicitar reset de senha
-export const useRequestPasswordResetEmail = () => {
-  return useMutation<{ requestPasswordResetEmail: boolean }, { email: string }>(
-    REQUEST_PASSWORD_RESET_EMAIL,
-    {
-      onCompleted: () => {
-        toast.success('📧 Email de recuperação enviado! Verifique sua caixa de entrada.');
-      },
-      onError: (error: any) => {
-        console.error('Erro ao solicitar reset de senha:', error);
-        
-        let errorMessage = '❌ Erro ao enviar email de recuperação.';
-        
-        if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-          const graphQLError = error.graphQLErrors[0];
-          
-          if (graphQLError.message.includes('email not found')) {
-            errorMessage = '📧 Email não encontrado. Verifique se está correto.';
-          } else if (graphQLError.message.includes('invalid email')) {
-            errorMessage = '📧 Email inválido. Digite um email válido.';
-          }
-        } else if (error.networkError) {
-          errorMessage = '🌐 Erro de conexão. Tente novamente.';
-        }
-        
-        toast.error(errorMessage);
-      },
-    }
-  );
-};
-
-// Hook para resetar senha
-export const useResetPassword = () => {
-  return useMutation<
-    { resetPassword: boolean },
-    { email: string; resetPasswordToken: string; newPassword: string }
-  >(RESET_PASSWORD, {
-    onCompleted: () => {
-      toast.success('Senha alterada com sucesso!');
-    },
-    onError: (error: any) => {
-      console.error('Erro ao resetar senha:', error);
-      toast.error('Erro ao alterar senha.');
-    },
-  });
-};
-
 // Hook para criar endereço
 export const useCreateCustomerAddress = () => {
   return useMutation<
@@ -273,4 +227,73 @@ export const useDeleteCustomerAddress = () => {
       },
     }
   );
+};
+
+// Hook para solicitar reset de senha
+export const useForgotPassword = () => {
+  return useMutation<
+    { requestPasswordResetEmail: boolean },
+    { email: string }
+  >(REQUEST_PASSWORD_RESET_EMAIL, {
+    errorPolicy: 'none',
+    onCompleted: () => {
+      toast.success('📧 Email de redefinição enviado! Verifique sua caixa de entrada.');
+    },
+    onError: (error) => {
+      console.error('Erro ao solicitar reset de senha:', error);
+      if (error.message.includes('email')) {
+        toast.error('Email não encontrado. Verifique se está correto.');
+      } else {
+        toast.error('Erro ao enviar email. Tente novamente.');
+      }
+    },
+  });
+};
+
+// Hook para alterar senha do customer logado
+export const useChangeCustomerPassword = () => {
+  return useMutation<
+    { changeCustomerPassword: Customer },
+    { currentPassword: string; newPassword: string }
+  >(CHANGE_CUSTOMER_PASSWORD, {
+    errorPolicy: 'none',
+    onCompleted: () => {
+      toast.success('🔒 Senha alterada com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Erro ao alterar senha:', error);
+      if (error.message.includes('Invalid login or password')) {
+        toast.error('🔒 Senha atual incorreta.');
+      } else if (error.message.includes('password')) {
+        toast.error('🔒 A nova senha deve ter pelo menos 8 caracteres.');
+      } else if (error.message.includes('locked')) {
+        toast.error('🔒 Conta bloqueada. Entre em contato com o suporte.');
+      } else {
+        toast.error('Erro ao alterar senha. Tente novamente.');
+      }
+    },
+  });
+};
+
+// Hook para redefinir senha
+export const useResetPassword = () => {
+  return useMutation<
+    { resetPassword: boolean },
+    { email: string; resetPasswordToken: string; newPassword: string }
+  >(RESET_PASSWORD, {
+    errorPolicy: 'none',
+    onCompleted: () => {
+      // Toast de sucesso será exibido na página ResetPassword
+    },
+    onError: (error) => {
+      console.error('Erro ao redefinir senha:', error);
+      if (error.message.includes('token')) {
+        toast.error('Token inválido ou expirado. Solicite um novo link.');
+      } else if (error.message.includes('password')) {
+        toast.error('🔒 A senha deve ter pelo menos 8 caracteres.');
+      } else {
+        toast.error('Erro ao redefinir senha. Tente novamente.');
+      }
+    },
+  });
 };

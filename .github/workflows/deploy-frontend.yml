@@ -1,5 +1,3 @@
-# Workflow: build do frontend e deploy para a branch gh-pages
-# Roda em push para main/master e manualmente (workflow_dispatch)
 name: Deploy Frontend to GitHub Pages
 
 on:
@@ -23,21 +21,33 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('src/frontend/package-lock.json', 'src/frontend/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies (npm ci if possible, otherwise npm install)
         working-directory: src/frontend
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "package-lock.json found — running npm ci"
+            npm ci
+          else
+            echo "No package-lock.json — running npm install"
+            npm install
+          fi
 
       - name: Build frontend
         working-directory: src/frontend
         env:
           CI: false
-          # Se preferir usar PUBLIC_URL em vez de homepage em package.json,
-          # defina aqui: PUBLIC_URL=/postpilot
           PUBLIC_URL: /postpilot
         run: npm run build
 
       - name: Add 404.html for SPA routing
-        # copia index.html para 404.html para permitir fallback no GitHub Pages (HTML5 history)
         run: cp src/frontend/build/index.html src/frontend/build/404.html
 
       - name: Deploy to gh-pages branch

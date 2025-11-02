@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/postpilot/static/css/main.7244a33b.css",
-    "main.js": "/postpilot/static/js/main.bb766ef4.js",
+    "main.css": "/postpilot/static/css/main.30c6092c.css",
+    "main.js": "/postpilot/static/js/main.f51a06da.js",
     "index.html": "/postpilot/index.html",
-    "main.7244a33b.css.map": "/postpilot/static/css/main.7244a33b.css.map",
-    "main.bb766ef4.js.map": "/postpilot/static/js/main.bb766ef4.js.map"
+    "main.30c6092c.css.map": "/postpilot/static/css/main.30c6092c.css.map",
+    "main.f51a06da.js.map": "/postpilot/static/js/main.f51a06da.js.map"
   },
   "entrypoints": [
-    "static/css/main.7244a33b.css",
-    "static/js/main.bb766ef4.js"
+    "static/css/main.30c6092c.css",
+    "static/js/main.f51a06da.js"
   ]
 }

@@ -249,7 +249,7 @@ class CreateSubscription implements ResolverInterface
         // Price doesn't exist, create it
         $priceData = [
             'unit_amount' => $amount,
-            'currency' => 'usd',
+            'currency' => 'brl',
             'recurring' => ['interval' => $interval],
             'product_data' => [
                 'name' => $product->getName(),

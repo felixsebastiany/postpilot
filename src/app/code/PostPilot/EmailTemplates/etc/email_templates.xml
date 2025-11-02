@@ -55,4 +55,22 @@
         type="html"
         module="PostPilot_EmailTemplates"
         area="frontend"/>
+
+    <!-- Template customizado de invoice -->
+    <template
+        id="postpilot_sales_email_invoice_template"
+        label="PostPilot - Invoice Email Template"
+        file="sales_email_invoice_template.html"
+        type="html"
+        module="PostPilot_EmailTemplates"
+        area="frontend"/>
+
+    <!-- Override do template padrão de invoice -->
+    <template
+        id="sales_email_invoice_template"
+        label="PostPilot - Default Invoice Email (Override)"
+        file="sales_email_invoice_template.html"
+        type="html"
+        module="PostPilot_EmailTemplates"
+        area="frontend"/>
 </config>

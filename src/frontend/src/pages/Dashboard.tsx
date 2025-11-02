@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import ChangePasswordForm from '../components/ChangePasswordForm';
+import SubscriptionPlans from '../components/SubscriptionPlans';
+import SubscriptionManagement from '../components/SubscriptionManagement';
+import { useCustomerSubscription } from '../hooks/useGraphQL';
+import { toast } from 'react-hot-toast';
 import {
   Bars3Icon,
   XMarkIcon,
@@ -15,15 +19,44 @@ import {
   ArrowRightOnRectangleIcon,
   SparklesIcon,
   ClockIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  CreditCardIcon
 } from '@heroicons/react/24/outline';
 
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const { data: subscriptionData, refetch: refetchSubscription } = useCustomerSubscription();
+
+  // Verificar se voltou do checkout Stripe com sucesso
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const subscriptionStatus = urlParams.get('subscription');
+    
+    if (subscriptionStatus === 'success') {
+      toast.success('🎉 Parabéns! Sua assinatura está ativa!', { 
+        id: 'subscription-success',
+        duration: 5000 
+      });
+      // Recarregar assinatura
+      refetchSubscription();
+      // Mudar para aba de assinatura para mostrar o status atualizado
+      setActiveTab('subscription');
+      // Limpar parâmetro da URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (subscriptionStatus === 'cancelled') {
+      toast.error('Checkout cancelado. Você pode tentar novamente quando quiser.', {
+        id: 'subscription-cancelled',
+        duration: 4000
+      });
+      // Limpar parâmetro da URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [refetchSubscription]);
   
   const handleLogout = () => {
     logout();
@@ -36,6 +69,7 @@ const Dashboard: React.FC = () => {
     { name: 'Perfis Espelhados', id: 'mirrors', icon: UserGroupIcon },
     { name: 'Agendamento', id: 'schedule', icon: CalendarIcon },
     { name: 'Analytics', id: 'analytics', icon: ChartBarIcon },
+    { name: 'Assinatura', id: 'subscription', icon: CreditCardIcon },
     { name: 'Conta', id: 'account', icon: CogIcon },
   ];
 
@@ -190,6 +224,16 @@ const Dashboard: React.FC = () => {
     </div>
   );
 
+  const renderSubscription = () => {
+    const hasActiveSubscription = subscriptionData?.getCustomerSubscription;
+    
+    if (hasActiveSubscription) {
+      return <SubscriptionManagement />;
+    } else {
+      return <SubscriptionPlans />;
+    }
+  };
+
   const renderAccount = () => (
     <div className="space-y-6">
       {/* Informações da Conta */}
@@ -223,7 +267,18 @@ const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Plano</p>
-              <p className="text-sm text-gray-900">Gratuito</p>
+              {subscriptionData?.getCustomerSubscription ? (
+                <>
+                  <p className="text-sm text-gray-900 font-semibold">
+                    {subscriptionData.getCustomerSubscription.plan_name}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {subscriptionData.getCustomerSubscription.billing_period === 'yearly' ? 'Anual' : 'Mensal'}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-gray-900">Gratuito</p>
+              )}
             </div>
           </div>
         </div>
@@ -294,6 +349,8 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-600">Funcionalidade em desenvolvimento...</p>
           </div>
         );
+      case 'subscription':
+        return renderSubscription();
       case 'account':
         return renderAccount();
       default:
